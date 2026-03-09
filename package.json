@@ -1,0 +1,38 @@
+{
+  "name": "minimax-vision-search",
+  "version": "1.0.0",
+  "description": "MiniMax Vision & Search Skill for OpenClaw",
+  "main": "scripts/start-api.js",
+  "scripts": {
+    "start": "node scripts/start-api.js",
+    "setup": "node scripts/setup-config.js",
+    "search": "node scripts/web-search.js",
+    "analyze": "node scripts/analyze-image.js",
+    "api": "cd api && npm start",
+    "install-deps": "cd api && npm install"
+  },
+  "keywords": [
+    "openclaw",
+    "minimax",
+    "vision",
+    "search",
+    "mcp",
+    "ai",
+    "skill"
+  ],
+  "author": "Skill Developer",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/minimax-vision-search.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/minimax-vision-search/issues"
+  },
+  "homepage": "https://github.com/yourusername/minimax-vision-search#readme",
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

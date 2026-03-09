@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MiniMax Vision & Search</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 30px;
+        }
+        
+        .tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: 500;
+            color: #6c757d;
+            transition: all 0.3s;
+            border-bottom: 3px solid transparent;
+        }
+        
+        .tab:hover {
+            background: #e9ecef;
+        }
+        
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+            background: white;
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 40px;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #495057;
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        .file-upload {
+            position: relative;
+            border: 2px dashed #dee2e6;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .file-upload:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+        
+        .file-upload input {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+        
+        .upload-icon {
+            font-size: 48px;
+            color: #6c757d;
+            margin-bottom: 15px;
+        }
+        
+        .upload-text {
+            color: #6c757d;
+            font-size: 1.1rem;
+        }
+        
+        .upload-hint {
+            color: #adb5bd;
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
+        
+        .preview-container {
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .preview-image {
+            max-width: 300px;
+            max-height: 300px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .btn-icon {
+            font-size: 1.2rem;
+        }
+        
+        .result-container {
+            margin-top: 40px;
+            display: none;
+        }
+        
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e9ecef;
+        }
+        
+        .result-title {
+            font-size: 1.5rem;
+            color: #495057;
+        }
+        
+        .result-content {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            min-height: 200px;
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+        
+        .search-results {
+            margin-top: 20px;
+        }
+        
+        .search-result {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .search-result:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .result-title {
+            font-size: 1.1rem;
+            color: #667eea;
+            margin-bottom: 10px;
+            text-decoration: none;
+            display: block;
+        }
+        
+        .result-title:hover {
+            text-decoration: underline;
+        }
+        
+        .result-snippet {
+            color: #6c757d;
+            line-height: 1.5;
+            margin-bottom: 10px;
+        }
+        
+        .result-meta {
+            display: flex;
+            justify-content: space-between;
+            color: #adb5bd;
+            font-size: 0.9rem;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error {
+            background: #fff5f5;
+            border: 1px solid #fed7d7;
+            color: #c53030;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .status-bar {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            border-top: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #28a745;
+        }
+        
+        .status-dot.offline {
+            background: #dc3545;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                border-radius: 10px;
+            }
+            
+            header {
+                padding: 30px 20px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .tab-content {
+                padding: 20px;
+            }
+            
+            .tabs {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>MiniMax Vision & Search</h1>
+            <div class="subtitle">强大的视觉分析和实时信息检索工具</div>
+        </header>
+        
+        <div class="tabs">
+            <div class="tab active" data-tab="search">🔍 网络搜索</div>
+            <div class="tab" data-tab="vision">🖼️ 图片分析</div>
+            <div class="tab" data-tab="api">⚙️ API接口</div>
+        </div>
+        
+        <!-- 网络搜索标签页 -->
+        <div class="tab-content active" id="search-tab">
+            <div class="form-group">
+                <label for="search-query">搜索查询</label>
+                <input type="text" id="search-query" placeholder="输入您要搜索的内容...">
+            </div>
+            
+            <div class="form-group">
+                <label for="search-count">结果数量</label>
+                <select id="search-count">
+                    <option value="3">3个结果</option>
+                    <option value="5" selected>5个结果</option>
+                    <option value="10">10个结果</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="search-language">搜索语言</label>
+                <select id="search-language">
+                    <option value="zh-CN">中文</option>
+                    <option value="en-US">英文</option>
+                </select>
+            </div>
+            
+            <button class="btn" id="search-btn">
+                <span class="btn-icon">🔍</span>
+                开始搜索
+            </button>
+            
+            <div class="loading" id="search-loading">
+                <div class="spinner"></div>
+                <p>正在搜索中，请稍候...</p>
+            </div>
+            
+            <div class="error" id="search-error"></div>
+            
+            <div class="result-container" id="search-results">
+                <div class="result-header">
+                    <h3 class="result-title">搜索结果</h3>
+                    <span id="result-count">0个结果</span>
+                </div>
+                <div class="search-results" id="results-list">
+                    <!-- 搜索结果将动态插入到这里 -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- 图片分析标签页 -->
+        <div class="tab-content" id="vision-tab">
+            <div class="form-group">
+                <label for="image-upload">上传图片</label>
+                <div class="file-upload">
+                    <div class="upload-icon">📁</div>
+                    <div class="upload-text">点击或拖拽上传图片</div>
+                    <div class="upload-hint">支持 JPG, PNG, GIF, WebP 格式，最大20MB</div>
+                    <input type="file" id="image-upload" accept="image/*">
+                </div>
+            </div>
+            
+            <div class="preview-container" id="image-preview">
+                <img class="preview-image" id="preview-image" src="" alt="预览">
+            </div>
+            
+            <div class="form-group">
+                <label for="analysis-prompt">分析提示</label>
+                <textarea id="analysis-prompt" placeholder="输入您想要的分析内容，例如：描述这张图片的内容、识别文字、分析场景等..."></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="output-format">输出格式</label>
+                <select id="output-format">
+                    <option value="text">文本格式</option>
+                    <option value="json">JSON格式</option>
+                </select>
+            </div>
+            
+            <button class="btn" id="analyze-btn">
+                <span class="btn-icon">🔍</span>
+                分析图片
+            </button>
+            
+            <div class="loading" id="analyze-loading">
+                <div class="spinner"></div>
+                <p>正在分析图片，请稍候...</p>
+            </div>
+            
+            <div class="error" id="analyze-error"></div>
+            
+            <div class="result-container" id="analysis-results">
+                <div class="result-header">
+                    <h3 class="result-title">分析结果</h3>
+                </div>
+                <div class="result-content" id="analysis-content">
+                    <!-- 分析结果将显示在这里 -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- API接口标签页 -->
+        <div class="tab-content" id="api-tab">
+            <h3>API接口文档</h3>
+            <p>MiniMax Vision & Search 提供RESTful API接口，方便开发者集成使用。</p>
+            
+            <div class="form-group">
+                <h4>健康检查</h4>
+                <pre><code>GET /api/status</code></pre>
+                <button class="btn" onclick="testApi('status')">测试</button>
+            </div>
+            
+            <div class="form-group">
+                <h4>网络搜索</h4>
+                <pre><code>POST /api/search
+Content-Type: application/json
+
+{
+  "query": "搜索关键词",
+  "count": 5,
+  "language": "zh-CN"
+}</code></pre>
+                <button class="btn" onclick="testApi('search')">测试</button>
+            </div>
+            
+            <div class="form-group">
+                <h4>图片分析</h4>
+                <pre><code>POST /api/analyze
+Content-Type: multipart/form-data
+
+image: [图片文件]
+prompt: "分析提示"
+format: "text"</code></pre>
+                <button class="btn" onclick="testApi('analyze')">测试</button>
+            </div>
+            
+            <div class="result-container" id="api-results">
+                <div class="result-header">
+                    <h3 class="result-title">API响应</h3>
+                </div>
+                <div class="result-content" id="api-content">
+                    <!-- API响应将显示在这里 -->
+                </div>
+            </div>
+        </div>
+        
+        <div class="status-bar">
+            <div class="status-indicator">
+                <div class="status-dot" id="status-dot"></div>
+                <span id="status-text">正在检查服务状态...</span>
+            </div>
+            <div>版本 1.0.0</div>
+        </div>
+    </div>
+
+    <script>
+        // 标签页切换
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                // 移除所有标签的active类
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                
+                // 添加当前标签的active类
+                tab.classList.add('active');
+                const tabId = tab.getAttribute('data-tab');
+                document.getElementById(`${tabId}-tab`).classList.add('active');
+            });
+        });
+        
+        // 图片预览
+        const imageUpload = document.getElementById('image-upload');
+        const previewContainer = document.getElementById('image-preview');
+        const previewImage = document.getElementById('preview-image');
+        
+        imageUpload.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    previewImage.src = e.target.result;
+                    previewContainer.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        // 拖拽上传
+        const fileUploadArea = document.querySelector('.file-upload');
+        fileUploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            fileUploadArea.style.borderColor = '#667eea';
+            fileUploadArea.style.background = '#f8f9ff';
+        });
+        
+        fileUploadArea.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            fileUploadArea.style.borderColor = '#dee2e6';
+            fileUploadArea.style.background = '';
+        });
+        
+        fileUploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            fileUploadArea.style.borderColor = '#dee2e6';
+            fileUploadArea.style.background = '';
+            
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) {
+                imageUpload.files = e.dataTransfer.files;
+                
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    previewImage.src = e.target.result;
+                    previewContainer.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        // 网络搜索
+        document.getElementById('search-btn').addEventListener('click', async () => {
+            const query = document.getElementById('search-query').value.trim();
+            const count = document.getElementById('search-count').value;
+            const language = document.getElementById('search-language').value;
+            
+            if (!query) {
+                showError('search-error', '请输入搜索内容');
+                return;
+            }
+            
+            // 显示加载状态
+            document.getElementById('search-loading').style.display = 'block';
+            document.getElementById('search-error').style.display = 'none';
+            document.getElementById('search-results').style.display = 'none';
+            
+            try {
+                const response = await fetch('/api/search', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        query,
+                        count,
+                        language
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    displaySearchResults(data.data);
+                } else {
+                    showError('search-error', data.error || '搜索失败');
+                }
+            } catch (error) {
+                showError('search-error', '网络请求失败: ' + error.message);
+            } finally {
+                document.getElementById('search-loading').style.display = 'none';
+            }
+        });
+        
+        // 图片分析
+        document.getElementById('analyze-btn').addEventListener('click', async () => {
+            const file = imageUpload.files[0];
+            const prompt = document.getElementById('analysis-prompt').value.trim();
+            const format = document.getElementById('output-format').value;
+            
+            if (!file) {
+                showError('analyze-error', '请选择要分析的图片');
+                return;
+            }
+            
+            if (!prompt) {
+                showError('analyze-error', '请输入分析提示');
+                return;
+            }
+            
+            // 显示加载状态
+            document.getElementById('analyze-loading').style.display = 'block';
+            document.getElementById('analyze-error').style.display = 'none';
+            document.getElementById('analysis-results').style.display = 'none';
+            
+            const formData = new FormData();
+            formData.append('image', file);
+            formData.append('prompt', prompt);
+            formData.append('format', format);
+            
+            try {
+                const response = await fetch('/api/analyze', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayAnalysisResult(data);
+                } else {
+                    showError('analyze-error', data.error || '分析失败');
+                }
+            } catch (error) {
+                showError('analyze-error', '网络请求失败: ' + error.message);
+            } finally {
+                document.getElementById('analyze-loading').style.display = 'none';
+            }
+        });
+        
+        // 显示搜索结果
+        function displaySearchResults(data) {
+            const resultsList = document.getElementById('results-list');
+            const resultCount = document.getElementById('result-count');
+            
+            resultsList.innerHTML = '';
+            resultCount.textContent = `${data.count}个结果`;
+            
+            if (data.results && data.results.length > 0) {
+                data.results.forEach(result => {
+                    const resultElement = document.createElement('div');
+                    resultElement.className = 'search-result';
+                    
+                    let html = '';
+                    if (result.url) {
+                        html += `<a href="${result.url}" target="_blank" class="result-title">${result.title}</a>`;
+                    } else {
+                        html += `<div class="result-title">${result.title}</div>`;
+                    }
+                    
+                    html += `<div class="result-snippet">${result.snippet}</div>`;
+                    
+                    if (result.date) {
+                        html += `<div class="result-meta">
+                            <span>${result.date}</span>
+                            <span>${result.url ? new URL(result.url).hostname : ''}</span>
+                        </div>`;
+                    }
+                    
+                    resultElement.innerHTML = html;
+                    resultsList.appendChild(resultElement);
+                });
+            } else {
+                resultsList.innerHTML = '<div class="search-result">未找到相关结果</div>';
+            }
+            
+            document.getElementById('search-results').style.display = 'block';
+        }
+        
+        // 显示分析结果
+        function displayAnalysisResult(data) {
+            const analysisContent = document.getElementById('analysis-content');
+            
+            if (data.data && typeof data.data === 'object') {
+                if (data.data.content) {
+                    analysisContent.textContent = data.data.content;
+                } else {
+                    analysisContent.textContent = JSON.stringify(data.data, null, 2);
+                }
+            } else {
+                analysisContent.textContent = JSON.stringify(data, null, 2);
+            }
+            
+            document.getElementById('analysis-results').style.display = 'block';
+        }
+        
+        // 显示错误
+        function showError(elementId, message) {
+            const errorElement = document.getElementById(elementId);
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+        }
+        
+        // API测试
+        async function testApi(endpoint) {
+            const apiContent = document.getElementById('api-content');
+            apiContent.textContent = '正在测试...';
+            document.getElementById('api-results').style.display = 'block';
+            
+            try {
+                let response;
+                if (endpoint === 'status') {
+                    response = await fetch('/api/status');
+                } else if (endpoint === 'search') {
+                    response = await fetch('/api/search', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            query: '测试搜索',
+                            count: 2,
+                            language: 'zh-CN'
+                        })
+                    });
+                } else if (endpoint === 'analyze') {
+                    // 创建测试图片
+                    const canvas = document.createElement('canvas');
+                    canvas.width = 100;
+                    canvas.height = 100;
+                    const ctx = canvas.getContext('2d');
+                    ctx.fillStyle = '#667eea';
+                    ctx.fillRect(0, 0, 100, 100);
+                    ctx.fillStyle = 'white';
+                    ctx.font = '20px Arial';
+                    ctx.fillText('Test', 30, 55);
+                    
+                    canvas.toBlob(async (blob) => {
+                        const formData = new FormData();
+                        formData.append('image', blob, 'test.png');
+                        formData.append('prompt', '描述这张图片的内容');
+                        formData.append('format', 'text');
+                        
+                        response = await fetch('/api/analyze', {
+                            method: 'POST',
+                            body: formData
+                        });
+                        
+                        const data = await response.json();
+                        apiContent.textContent = JSON.stringify(data, null, 2);
+                    });
+                    return;
+                }
+                
+                const data = await response.json();
+                apiContent.textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                apiContent.textContent = `错误: ${error.message}`;
+            }
+        }
+        
+        // 检查服务状态
+        async function checkStatus() {
+            const statusDot = document.getElementById('status-dot');
+            const statusText = document.getElementById('status-text');
+            
+            try {
+                const response = await fetch('/api/status');
+                const data = await response.json();
+                
+                if (data.success && data.status === 'online') {
+                    statusDot.className = 'status-dot';
+                    statusText.textContent = '服务在线';
+                } else {
+                    statusDot.className = 'status-dot offline';
+                    statusText.textContent = '服务离线';
+                }
+            } catch (error) {
+                statusDot.className = 'status-dot offline';
+                statusText.textContent = '连接失败';
+            }
+        }
+        
+        // 页面加载时检查状态
+        window.addEventListener('load', () => {
+            checkStatus();
+            // 每30秒检查一次状态
+            setInterval(checkStatus, 30000);
+        });
+    </script>
+</body>
+</html>
