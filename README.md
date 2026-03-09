@@ -1,6 +1,15 @@
 # MiniMax Vision & Search Skill
 
+![GitHub Release](https://img.shields.io/github/v/release/deciia/minimax-vision-search)
+![GitHub License](https://img.shields.io/github/license/deciia/minimax-vision-search)
+![OpenClaw Skill](https://img.shields.io/badge/OpenClaw-Skill-blue)
+![MiniMax MCP](https://img.shields.io/badge/MiniMax-MCP-green)
+
 一个基于MiniMax MCP的OpenClaw技能，提供强大的视觉分析和实时信息检索功能。
+
+**🌐 Live Demo**: [https://deciia.github.io/minimax-vision-search/](https://deciia.github.io/minimax-vision-search/)
+
+**📦 Download**: [v1.0.0 Release](https://github.com/deciia/minimax-vision-search/releases/tag/v1.0.0)
 
 ## 功能特性
 
